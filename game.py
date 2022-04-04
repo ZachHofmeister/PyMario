@@ -2,13 +2,25 @@ import sys
 
 import pygame as pg
 from settings import Settings
+from level import Level
+from vector import Vector
 
+LEFT, RIGHT, UP, DOWN, STOP = 'left', 'right', 'up', 'down', 'stop'
+
+dirs = {LEFT: Vector(-1, 0),
+        RIGHT: Vector(1, 0),
+        STOP: Vector(0, 0)}
+
+dir_keys = {pg.K_LEFT: LEFT, pg.K_a: LEFT,
+            pg.K_RIGHT: RIGHT, pg.K_d: RIGHT,
+            pg.K_UP: UP, pg.K_w: UP, pg.K_SPACE: UP,
+            pg.K_DOWN: DOWN, pg.K_s: DOWN}
 
 class Game:
     def __init__(self):
         # Init pygame
         pg.init()
-        pg.display.set_caption("Super Wario Game")
+        pg.display.set_caption("Super Mario Game")
 
         # Instantiate helper objects
         self.settings = Settings()
@@ -19,11 +31,14 @@ class Game:
         self.bg_color = list(self.settings.bg_color)
         self.finished = False
 
+        # Init sub classes
+        self.level = Level(self, 'level_loc.txt', self.bg_color)
+
     def update(self):
-        pass
+        self.level.update();
 
     def draw(self):
-        self.screen.fill(self.bg_color)
+        self.level.draw();
         pg.display.flip()
 
     def check_events(self):
@@ -31,19 +46,20 @@ class Game:
             if e.type == pg.QUIT:
                 self.finished = True
             elif e.type == pg.KEYDOWN:
-                # if e.key == pg.K_1:
-                #     self.bg_color[0] += 10
-                # elif e.key == pg.K_2:
-                #     self.bg_color[0] -= 10
-                # elif e.key == pg.K_3:
-                #     self.bg_color[1] += 10
-                # elif e.key == pg.K_4:
-                #     self.bg_color[1] -= 10
-                # elif e.key == pg.K_5:
-                #     self.bg_color[2] += 10
-                # elif e.key == pg.K_6:
-                #     self.bg_color[2] -= 10
-                print(self.bg_color)
+                if e.key in dir_keys:
+                    d = dir_keys[e.key]
+                    if d == LEFT or d == RIGHT:
+                        self.level.mario.move(dirs[d])
+                    elif d == UP:
+                        self.level.mario.jump()
+                    elif d == DOWN:
+                        self.level.mario.crouch()
+            elif e.type == pg.KEYUP:
+                if e.key in dir_keys:
+                    d = dir_keys[e.key]
+                    if d == LEFT or d == RIGHT:
+                        self.level.mario.move(dirs[STOP])
+                # print(self.bg_color)
 
     def play(self):
         while not self.finished:
