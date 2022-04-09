@@ -27,6 +27,12 @@ class Level:
     def update(self):
         self.entities.update()
         self.mario.update()
+        if self.mario.ul.x + (self.mario.size/2) > (self.screen.get_size()[0]/2):
+            # when mario moves past middle of screen, move level
+            # print (self.mario.ul.x + (self.mario.size/2) - (self.screen.get_size()[0]/2))
+            self.entities.move(-Vector(self.mario.ul.x + (self.mario.size/2) - (self.screen.get_size()[0]/2), 0))
+            self.mario.ul.x = (self.screen.get_size()[0]/2) - (self.mario.size/2)
+
 
     def draw(self):
         # rect = self.back_image.get_rect()

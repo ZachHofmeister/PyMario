@@ -22,6 +22,10 @@ class Game:
         pg.init()
         pg.display.set_caption("Super Mario Game")
 
+        # Clock used to cap FPS
+        self.clock = pg.time.Clock()
+        self.deltaTime = 0
+
         # Instantiate helper objects
         self.settings = Settings()
 
@@ -45,20 +49,24 @@ class Game:
         for e in pg.event.get():
             if e.type == pg.QUIT:
                 self.finished = True
-            elif e.type == pg.KEYDOWN:
+            if e.type == pg.KEYUP:
+                if e.key in dir_keys:
+                    d = dir_keys[e.key]
+                    if (d == LEFT and self.level.mario.vel.x <= 0) or (d == RIGHT and self.level.mario.vel.x >= 0):
+                        self.level.mario.move(dirs[STOP])  # Stops, only if still moving the direction of key released
+                    elif d == UP:
+                        self.level.mario.jumping = False
+            if e.type == pg.KEYDOWN:
                 if e.key in dir_keys:
                     d = dir_keys[e.key]
                     if d == LEFT or d == RIGHT:
+                        print(d)
                         self.level.mario.move(dirs[d])
                     elif d == UP:
-                        self.level.mario.jump()
+                        # self.level.mario.jump()
+                        self.level.mario.jumping = True
                     elif d == DOWN:
                         self.level.mario.crouch()
-            elif e.type == pg.KEYUP:
-                if e.key in dir_keys:
-                    d = dir_keys[e.key]
-                    if d == LEFT or d == RIGHT:
-                        self.level.mario.move(dirs[STOP])
                 # print(self.bg_color)
 
     def play(self):
@@ -66,5 +74,6 @@ class Game:
             self.check_events()
             self.update()
             self.draw()
+            self.deltaTime = self.clock.tick(self.settings.fps)  # FPS cap
         print("GAME OVER! EXITING...")
         exit()
