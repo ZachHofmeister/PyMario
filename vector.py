@@ -17,4 +17,6 @@ class Vector:
     def norm(self): return self / self.magnitude()
     def __eq__(self, o): return self.x == o.x and self.y == o.y
     def __ne__(self, o): return not self == o
+    def tuple(self): return self.x, self.y
+    def vmul(self, o): return Vector(self.x * o.x, self.y * o.y)
 

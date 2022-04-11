@@ -21,17 +21,17 @@ class Level:
 
         block_sz = self.game.settings.screen_height / len(self.map_schema)
         print(block_sz)
-        self.entities = Entities(self.game, self.map_schema, block_sz)
-        self.mario = Mario(self.game, block_sz, Vector(100, 600), 'mario.png', self.entities)
+        self.entities = Entities(self.game, self.map_schema, Vector(block_sz, block_sz))
+        self.mario = Mario(self.game, Vector(block_sz, block_sz), Vector(100, 500), self.entities)
 
     def update(self):
         self.entities.update()
         self.mario.update()
-        if self.mario.ul.x + (self.mario.size/2) > (self.screen.get_size()[0]/2):
+        if self.mario.ul.x + (self.mario.size.x/2) > (self.screen.get_size()[0]/2):
             # when mario moves past middle of screen, move level
             # print (self.mario.ul.x + (self.mario.size/2) - (self.screen.get_size()[0]/2))
-            self.entities.move(-Vector(self.mario.ul.x + (self.mario.size/2) - (self.screen.get_size()[0]/2), 0))
-            self.mario.ul.x = (self.screen.get_size()[0]/2) - (self.mario.size/2)
+            self.entities.move(-Vector(self.mario.ul.x + (self.mario.size.x/2) - (self.screen.get_size()[0]/2), 0))
+            self.mario.ul.x = (self.screen.get_size()[0]/2) - (self.mario.size.x/2)
 
 
     def draw(self):

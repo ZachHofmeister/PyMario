@@ -56,6 +56,8 @@ class Game:
                         self.level.mario.move(dirs[STOP])  # Stops, only if still moving the direction of key released
                     elif d == UP:
                         self.level.mario.jumping = False
+                    elif d == DOWN:
+                        self.level.mario.toggle_duck()
             if e.type == pg.KEYDOWN:
                 if e.key in dir_keys:
                     d = dir_keys[e.key]
@@ -66,7 +68,9 @@ class Game:
                         # self.level.mario.jump()
                         self.level.mario.jumping = True
                     elif d == DOWN:
-                        self.level.mario.crouch()
+                        self.level.mario.toggle_duck()
+                elif e.key == pg.K_RETURN:
+                    self.level.mario.change_state((self.level.mario.state + 1) % 3)
                 # print(self.bg_color)
 
     def play(self):

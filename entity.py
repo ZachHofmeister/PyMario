@@ -3,15 +3,62 @@ from pygame.sprite import Sprite, Group
 from vector import Vector
 
 
+class Entity(Sprite):
+    def __init__(self, game, size, ul, image):
+        super().__init__()
+        self.game = game
+        self.screen = game.screen
+        self.size = size
+        self.ul = ul
+        self.image = pg.transform.scale(image, size.tuple())
+        self.rect = self.image.get_rect()
+
+    def update(self):
+        self.rect.x, self.rect.y = self.ul.x, self.ul.y
+
+    def draw(self):
+        self.screen.blit(self.image, self.rect)
+
+    def move(self, delta_vector):
+        self.ul += delta_vector
+
+
+class AnimatedEntity(Entity):
+    def __init__(self, game, size, ul, anim_dict):
+        super().__init__(game, size, ul, anim_dict.image())
+        self.anim_dict = anim_dict
+        self.xdir = 1
+
+    def draw(self, hflip=False):
+        self.screen.blit(pg.transform.flip(self.anim_dict.image(), hflip, False), self.rect)
+
+    def anim_switch_to(self, key):
+        self.anim_dict.switch_to(key)
+        self.image = self.anim_dict.image()
+        self.rect = self.image.get_rect()
+
+    def anim_has_key(self, key): self.anim_dict.has_key(key)
+    def anim_keys(self): return self.anim_dict.keys()
+    def anim_is_expired(self): return self.anim_dict.is_expired()
+    def anim_reset(self): self.anim_dict.reset()
+    def anim_image(self): return self.anim_dict.image()
+
+
+class ContainerEntity(Entity):
+    def __init__(self, game, size, ul, image, entity_char):
+        super().__init__(game, size, ul, image)
+        self.entity_char = entity_char
+
+
 class Entities:
     char_dict = {
-        'X': 'Ground_Brick.png',
-        'B': 'Red_Brick.png',
-        'M': 'Red_Brick.png',
-        'S': 'Red_Brick.png',
-        'R': 'Stair_Brick.png',
-        '?': 'Item_Brick.png',
-        'V': 'Invisible_Block.png'
+        'X': {'class': Entity, 'img': pg.image.load('images/Ground_Brick.png')},
+        'B': {'class': Entity, 'img': pg.image.load('images/Red_Brick.png')},
+        'M': {'class': Entity, 'img': pg.image.load('images/Red_Brick.png')},
+        'S': {'class': Entity, 'img': pg.image.load('images/Red_Brick.png')},
+        'R': {'class': Entity, 'img': pg.image.load('images/Stair_Brick.png')},
+        '?': {'class': Entity, 'img': pg.image.load('images/Item_Brick.png')},
+        'V': {'class': Entity, 'img': pg.image.load('images/Invisible_Block.png')}
     }
 
     def __init__(self, game, map_schema, block_sz):
@@ -28,10 +75,17 @@ class Entities:
                 largest_x = len(line)
             for x, char in enumerate(line):
                 if char in Entities.char_dict:
-                    self.group.add(Entity(self.game, self.size, Vector(x, y) * self.size, Entities.char_dict[char]))
+                    props = Entities.char_dict[char]
+                    self.group.add(props['class'](self.game, self.size, Vector(x, y).vmul(self.size), props['img']))
         # add invisible barrier to end of level
         for y, line in enumerate(self.map_schema):
-            self.group.add(Entity(self.game, self.size, Vector(largest_x-1, y) * self.size, Entities.char_dict['V']))  # largest_x-1 for \n char
+            props = Entities.char_dict['V']
+            self.group.add(props['class'](self.game, self.size, Vector(largest_x-1, y).vmul(self.size), props['img']))  # largest_x-1 for \n char
+
+    def create_entity(self, char, game, size, ul, image):
+        if char == 'X':
+            return Entity(game, size, ul, image)
+
 
     def update(self):
         for entity in self.group.sprites():
@@ -45,22 +99,3 @@ class Entities:
         for entity in self.group.sprites():
             entity.move(delta_vector)
 
-
-class Entity(Sprite):
-    def __init__(self, game, size, ul, image):
-        super().__init__()
-        self.game = game
-        self.screen = game.screen
-        self.size = size
-        self.ul = ul
-        self.image = pg.transform.scale(pg.image.load(f'images/{image}'), (size, size))
-        self.rect = self.image.get_rect()
-
-    def update(self):
-        self.rect.x, self.rect.y = self.ul.x, self.ul.y
-
-    def draw(self):
-        self.screen.blit(self.image, self.rect)
-
-    def move(self, delta_vector):
-        self.ul += delta_vector
